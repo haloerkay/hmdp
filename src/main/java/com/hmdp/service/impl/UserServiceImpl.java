@@ -57,7 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        session.setAttribute("code",code);
         // 生成验证码并存入redis，有效期为2分钟
         stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, LOGIN_CODE_TTL, TimeUnit.MINUTES);
-        log.debug("验证码发送成功,为{}",code);
+        log.info("验证码发送成功,为{}",code);
 
         return Result.ok();
     }

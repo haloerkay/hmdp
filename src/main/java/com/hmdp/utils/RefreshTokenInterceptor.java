@@ -3,7 +3,6 @@ package com.hmdp.utils;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hmdp.dto.UserDTO;
-import com.hmdp.entity.User;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -13,13 +12,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.hmdp.utils.RedisConstants.LOGIN_USER_TTL;
-import static com.hmdp.utils.RedisConstants.USER_SIGN_KEY;
+import static com.hmdp.utils.RedisConstants.*;
 
 public class RefreshTokenInterceptor implements HandlerInterceptor {
     private StringRedisTemplate stringRedisTemplate;
 
     public RefreshTokenInterceptor(StringRedisTemplate redisTemplate) {
+
         this.stringRedisTemplate = redisTemplate;
     }
 
@@ -32,7 +31,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        Map<Object, Object> map = stringRedisTemplate.opsForHash().entries(USER_SIGN_KEY + token);
+        Map<Object, Object> map = stringRedisTemplate.opsForHash().entries(LOGIN_USER_KEY + token);
         // token过期
         if(map.isEmpty()){
             return true;
