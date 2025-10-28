@@ -9,6 +9,7 @@ import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,19 +45,32 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if(voucher.getStock() < 1){
             return Result.fail("库存不足");
         }
-
-        boolean success = seckillVoucherService.update().
-                setSql("stock = stock - 1").
-                eq("voucher_id", voucherId).update();
+        Long userId = UserHolder.getUser().getId();
+        synchronized (userId.toString().intern()){
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.createVoucherOrder(voucherId);
+        }
+    }
+    public Result createVoucherOrder(Long voucherId){
+        // 一人购买一单
+        Long userId = UserHolder.getUser().getId();
+        int count = query().eq("user_id",userId).eq("voucher_id",voucherId).count();
+        if(count > 0){
+            return Result.fail("用户已经购买过一次");
+        }
+        // 数据库有行锁
+        boolean success = seckillVoucherService.update()
+                .setSql("stock = stock - 1")
+                .eq("voucher_id", voucherId).gt("stock", 0)
+                .update();
         if(!success){
             return Result.fail("库存不足");
         }
-
         // 给优惠券设置三个字段，订单id、用户id、优惠券id
         VoucherOrder voucherOrder = new VoucherOrder();
         long orderId = redisIdWorker.nextId("order");
         voucherOrder.setId(orderId);
-        voucherOrder.setUserId(UserHolder.getUser().getId());
+        voucherOrder.setUserId(userId);
         voucherOrder.setVoucherId(voucherId);
 
         save(voucherOrder);
