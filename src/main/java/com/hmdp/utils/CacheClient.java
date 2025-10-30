@@ -108,6 +108,7 @@ public class CacheClient {
 
     private boolean tryLock(String key){
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(key,"1",10,TimeUnit.SECONDS);
+        // 避免自动拆箱时flag为null产生空指针风险
         return BooleanUtil.isTrue(flag);
     }
 
