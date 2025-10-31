@@ -25,7 +25,7 @@ end
 -- 校验通过，删减库存，添加用户id到集合中。返回0
 redis.call("incrby",stockKey,-1)
 redis.call("sadd",orderKey,userId)
-
-redis.call('xadd','stream.orders"','*','id',orderId,'userId',userId,'voucherId',voucherId)
+-- 发消息到消息队列中 XADD  stream.orders * k1 v1 k2 v2
+redis.call('xadd','stream.orders','*','id',orderId,'userId',userId,'voucherId',voucherId)
 
 return 0
