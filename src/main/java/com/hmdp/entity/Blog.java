@@ -43,6 +43,8 @@ public class Blog implements Serializable {
     /**
      * 用户图标
      */
+
+    // @TableField(exist = false)表示当前字段不属于实体类对应的tb_blog表
     @TableField(exist = false)
     private String icon;
     /**
